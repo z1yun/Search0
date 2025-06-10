@@ -17,14 +17,8 @@ class SqliteMgr {
     static let shared = SqliteMgr()
     
     init() {
-//        guard openDatabase() else {
-//            return nil
-//        }
-//        if !createTable() {
-//            return nil
-//        }
-        _ = createTable()
         _ = openDatabase()
+        _ = createTable()
     }
     
     deinit {
@@ -50,7 +44,7 @@ class SqliteMgr {
         CREATE TABLE IF NOT EXISTS \(tableName) (
             idx INTEGER PRIMARY KEY AUTOINCREMENT,
             search_word TEXT NOT NULL,
-            regdt INTEGER NOT NULL
+            regdt REAL NOT NULL
         );
         """
         
@@ -71,7 +65,7 @@ class SqliteMgr {
     }
     
     /// 데이터 추가.
-    func insert(searchWord: String, regdt: Int) -> Bool {
+    func insert(searchWord: String, regdt: Double) -> Bool {
         let insertSQL = "INSERT INTO \(tableName) (search_word, regdt) VALUES (?, ?);"
         var statement: OpaquePointer?
         
@@ -81,7 +75,7 @@ class SqliteMgr {
         }
         
         sqlite3_bind_text(statement, 1, (searchWord as NSString).utf8String, -1, nil)
-        sqlite3_bind_int(statement, 2, Int32(regdt))
+        sqlite3_bind_double(statement, 2, regdt)
         
         defer { sqlite3_finalize(statement) }
         
@@ -94,10 +88,10 @@ class SqliteMgr {
     }
     
     /// 전체 데이터.
-    func selectAll() -> [(idx: Int, text: String, regdt: Int)] {
-        let selectSQL = "SELECT idx, search_word, regdt FROM \(tableName) ORDER BY idx DESC;"
+    func selectAll() -> [(idx: Int, text: String, regdt: Double)] {
+        let selectSQL = "SELECT idx, search_word, regdt FROM \(tableName) ORDER BY regdt DESC;"
         var statement: OpaquePointer?
-        var results: [(Int, String, Int)] = []
+        var results: [(Int, String, Double)] = []
         
         if sqlite3_prepare_v2(db, selectSQL, -1, &statement, nil) != SQLITE_OK {
             print("Select prepare error: \(errorMessage())")
@@ -109,7 +103,7 @@ class SqliteMgr {
         while sqlite3_step(statement) == SQLITE_ROW {
             let idx = Int(sqlite3_column_int(statement, 0))
             let word = String(cString: sqlite3_column_text(statement, 1))
-            let regdt = Int(sqlite3_column_int(statement, 2))
+            let regdt = Double(sqlite3_column_double(statement, 2))
             results.append((idx, word, regdt))
         }
         
@@ -118,7 +112,7 @@ class SqliteMgr {
     
     /// row 삭제
     func delete(idx: Int) -> Bool {
-        let deleteSQL = "DELETE FROM \(tableName) WHERE idx = ?;"
+        let deleteSQL = "DELETE FROM \(tableName) WHERE idx = \(idx);"
         var statement: OpaquePointer?
         
         if sqlite3_prepare_v2(db, deleteSQL, -1, &statement, nil) != SQLITE_OK {
