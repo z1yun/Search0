@@ -25,10 +25,19 @@ class MainViewController: UIViewController {
         setClosure()
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        /*
+         Navigation largeTitle 사용시 다른 ViewController로 push후 다시 back 했을때
+         largeTitle이 제대로 동작하지 않는 문제가 있다. 그래서 viewWillAppear에 아래 두줄 추가한다.
+         */
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.largeTitleDisplayMode = .always
+    }
+    
     func setNavigationBar() {
         self.title = "Search"
-        self.navigationController?.navigationBar.prefersLargeTitles = true
-        self.navigationController?.navigationBar.topItem?.largeTitleDisplayMode = .automatic
         
         // UISearchController 세팅
         let searchController = UISearchController(searchResultsController: searchViewController)
@@ -76,7 +85,15 @@ class MainViewController: UIViewController {
         // 검색 결과에서 눌렀음.
         listView.listSelected = { [weak self] (repo) in
             guard let self = self else { return }
+
+            // WebViewController의 back버튼 조금만 바꿔주자.
+            let backItem = UIBarButtonItem()
+            backItem.title = ""
+            backItem.tintColor = .red
+            navigationItem.backBarButtonItem = backItem
             
+            let vc = WebViewController(url: repo.owner.htmlURL)
+            self.navigationController?.pushViewController(vc, animated: true)
         }
     }
     
