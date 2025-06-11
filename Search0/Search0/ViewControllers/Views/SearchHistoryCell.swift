@@ -69,6 +69,10 @@ class SearchHistoryCell: UITableViewCell {
         searchIdx = idx
     }
     
+    func getText() -> (Int, String) {
+        return (searchIdx, textLb.text ?? "")
+    }
+    
 }
 
 

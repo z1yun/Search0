@@ -7,12 +7,13 @@
 
 import UIKit
 
-
 /// 최근검색 기록 보여주는 뷰
 class SearchHistoryView: UIView {
     
     let viewModel = SearchHistoryViewModel()
     private let table = UITableView()
+
+    var listSelected: ((SearchHistory) -> Void)?
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -143,8 +144,9 @@ extension SearchHistoryView: UITableViewDelegate, UITableViewDataSource {
     
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // 이전 검색어 누름.
-//        TODO: ---- dddddd
+        // 이전 검색어 누름. idx 랑 검색어 가져온다
+        let searchHistory = viewModel.list[indexPath.row]
+        listSelected?(searchHistory)
     }
     
 }

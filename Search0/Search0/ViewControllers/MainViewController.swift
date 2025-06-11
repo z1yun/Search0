@@ -12,13 +12,17 @@ class MainViewController: UIViewController {
 
     let table = UITableView()
     let searchViewController = SearchViewController()
+    // 이전 검색 기록
     let historyView = SearchHistoryView()
+    // 검색 결과
+    let listView = SearchListView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setNavigationBar()
-        viewLayout()
+        setSubViews()
+        setClosure()
     }
 
     func setNavigationBar() {
@@ -36,10 +40,10 @@ class MainViewController: UIViewController {
         
     }
 
-    func viewLayout() {
+    func setSubViews() {
         // 테이블뷰 세팅
-        self.view.addSubview(table)
-        table.snp.makeConstraints { make in
+        self.view.addSubview(listView)
+        listView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.bottom.equalTo(self.view.safeAreaLayoutGuide)
         }
@@ -54,7 +58,33 @@ class MainViewController: UIViewController {
         // searchView가 property로 설정되어 있어 선언과 동시에 할당하다보니 UITableView의 separatorStyle 적용이 안되는 문제가 있다.
         // viewDidLoad에서 separatorStyle 설정하면 된다. 그래서 여기에 코드가 있다.
         historyView.tableViewSeparatorStyleNone()
+        listView.tableViewSeparatorStyleNone()
+        
     }
+    
+    func setClosure() {
+        // 각 뷰에 있는 클로저도 설정한다.
+        // 이전 검색기록에서 검색어 눌렀음
+        historyView.listSelected = { [weak self] (history) in
+            guard let self = self else { return }
+            // 검색을 해야 한다. listView가 갖고 있는 viewModel을 사용하자.
+            // 이건 검색기록을 눌렀으니 무조건 1페이지
+            listView.viewModel.getRepository(word: history.text, page: 1)
+            // 검색 결과 리스트를 보여주기 위해 historyView는 숨긴다.
+            hideHistoryView(hide: true)
+        }
+        
+        // 검색 결과에서 눌렀음.
+        listView.listSelected = { [weak self] (repo) in
+            guard let self = self else { return }
+            
+        }
+    }
+    
+    func hideHistoryView(hide: Bool) {
+        historyView.isHidden = hide
+    }
+    
     
 }
 

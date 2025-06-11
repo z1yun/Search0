@@ -11,21 +11,17 @@ struct SearchHistory: Codable {
     var idx: Int
     var text: String
     var regdt: Double // TimeInterval since ReferenceTime
+    
+    func dateString() -> String {
+        let date = Date(timeIntervalSinceReferenceDate: regdt)
+        let fmt = DateFormatter()
+        fmt.dateFormat = "MM.dd"
+        return fmt.string(from: date)
+    }
 }
 
 class SearchHistoryViewModel {
-    
-//    private(set) var list: [SearchHistory] = [
-//        SearchHistory(idx: 1, text: "text", regdt: 99999999),
-//        SearchHistory(idx: 2, text: "texttexttexttext", regdt: 99999999),
-//        SearchHistory(idx: 3, text: "texttexttext", regdt: 99999999),
-//        SearchHistory(idx: 4, text: "texttexttexttexttexttexttexttexttexttexttext te\nbttexttexttexttexttexttextexttexttexttexttexttexttexttexttexttext", regdt: 99999999),
-//        SearchHistory(idx: 5, text: "texttext", regdt: 99999999),
-//        SearchHistory(idx: 6, text: "texttext", regdt: 99999999),
-//        SearchHistory(idx: 7, text: "text", regdt: 99999999),
-//        SearchHistory(idx: 8, text: "text", regdt: 99999999),
-//        SearchHistory(idx: 9, text: "text", regdt: 99999999),
-//    ] {
+
     private(set) var list: [SearchHistory] = [] {
         didSet {
             // 리스트가 변경되면 알려주자.
