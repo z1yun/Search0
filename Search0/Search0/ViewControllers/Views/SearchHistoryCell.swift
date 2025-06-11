@@ -74,37 +74,3 @@ class SearchHistoryCell: UITableViewCell {
     }
     
 }
-
-
-
-// 최근 검색어가 아무것도 없을 때 보여줄 셀 하나 만든다.
-class NoHistoryCell: UITableViewCell {
-    static let identifier = "NoHistoryCell"
-    
-    private let textLb: UILabel = {
-        let lbl = UILabel.label("최근 검색 기록이 없습니다.", 13)
-        return lbl
-    }()
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        setSubViews()
-    }
-    
-    func setSubViews() {
-        
-        // 검색어 보여주는 Label
-        textLb.numberOfLines = 0
-        textLb.textColor = .darkGray
-        textLb.textAlignment = .center
-        self.contentView.addSubview(textLb)
-        textLb.snp.makeConstraints { make in
-            make.leading.trailing.top.bottom.equalToSuperview()
-        }
-    }
-    
-}

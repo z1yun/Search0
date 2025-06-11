@@ -33,11 +33,13 @@ struct Repository: Codable {
 struct Owner: Codable {
     let login: String
     let avatarURL: String
+    let htmlURL: String
     
     
     enum CodingKeys: String, CodingKey {
         case login
         case avatarURL = "avatar_url"
+        case htmlURL = "html_url"
     }
 }
 
@@ -58,9 +60,9 @@ class RepositoriesViewModel {
         Task {
             if let data: (Data, URLResponse) = await api.sendRequest(word: word, page: page),
                let repos = Repositories.from(data: data.0) {
-                // Repositories 로 받음
-                print(repos)
+                totalCount = repos.totalCount
                 
+                // Repositories 로 받음
                 if page == 1 {  // 데이터를 받아왔는데 1페이지임. 처음 받아온 데이터. items를 그냥 list
                     list = repos.items
                 } else {        // 2페이지 부터는 list에 append해야 함.

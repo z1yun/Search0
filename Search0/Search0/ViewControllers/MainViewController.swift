@@ -43,16 +43,15 @@ class MainViewController: UIViewController {
     func setSubViews() {
         // 테이블뷰 세팅
         self.view.addSubview(listView)
+        listView.isHidden = true
         listView.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.top.bottom.equalTo(self.view.safeAreaLayoutGuide)
+            make.leading.trailing.top.bottom.equalToSuperview()
         }
         
         // 검색 기록 뷰 일단 붙여둔다.
         self.view.addSubview(historyView)
         historyView.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.top.bottom.equalTo(self.view.safeAreaLayoutGuide)
+            make.leading.trailing.top.bottom.equalTo(self.view.safeAreaLayoutGuide)
         }
         
         // searchView가 property로 설정되어 있어 선언과 동시에 할당하다보니 UITableView의 separatorStyle 적용이 안되는 문제가 있다.
@@ -83,6 +82,7 @@ class MainViewController: UIViewController {
     
     func hideHistoryView(hide: Bool) {
         historyView.isHidden = hide
+        listView.isHidden = !hide
     }
     
     
@@ -114,8 +114,16 @@ extension MainViewController: UISearchControllerDelegate, UISearchResultsUpdatin
     // 검색 키보드에서 Enter(Search) 눌렀음.
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         // DB에 검색에 추가 해야함. SearchHistoryView가 갖고 있는 SearchHistoryViewModel을 통해서 추가하자.
-        try? historyView.viewModel.addHistory(text: searchBar.text!, regdt: Date.timeIntervalSinceReferenceDate)
-
+        print(#function)
+        
+        if let text = searchBar.text, text.isEmpty == false {
+            try? historyView.viewModel.addHistory(text: text, regdt: Date.timeIntervalSinceReferenceDate)
+            // 검색 request
+            listView.viewModel.getRepository(word: text, page: 1)
+            // listView 보여준다.
+            hideHistoryView(hide: true)
+            searchViewController.dismiss(animated: true)
+        }
     }
     
 }

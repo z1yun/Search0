@@ -48,11 +48,16 @@ class SearchHistoryViewModel {
             throw NSError(domain: mgr.errorMessage(), code: -1)
         }
         
+        // 중복제거
+        if let index = list.firstIndex(where: { $0.text == text }) {
+            _ = try deleteHistory(idx: list[index].idx)
+        }
+        
         // 추가 성공했을때 기록이 10개 이상이면 list의 0번 삭제하고 리스트 다시 가져온다.
         if list.count >= 10 {
             if let search = list.last {
                 do {
-                    let _ = try deleteHistory(idx: search.idx)
+                    _ = try deleteHistory(idx: search.idx)
                 } catch {
                     throw error
                 }

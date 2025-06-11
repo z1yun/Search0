@@ -17,6 +17,7 @@ class SearchListView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        self.clipsToBounds = true
         setSubViews()
         setClosure()
     }
@@ -27,26 +28,38 @@ class SearchListView: UIView {
     
     func setSubViews() {
         
-        // n개의 저장소
-        titleLb.textColor = .gray
-        self.addSubview(titleLb)
-        
-        titleLb.snp.makeConstraints { make in
-            make.leading.top.equalToSuperview().offset(10)
-            make.height.equalTo(40)
-        }
-        
         // 검색기록 리스트 보여줄 UITableView
         table.dataSource = self
         table.delegate = self
         table.estimatedRowHeight = 80
+        table.sectionHeaderHeight = 40
+        
         table.register(SearchListCell.self, forCellReuseIdentifier: SearchListCell.identifier)
         self.addSubview(table)
         
         table.snp.makeConstraints { make in
-            make.top.equalTo(titleLb.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
+            make.top.leading.trailing.bottom.equalToSuperview()
         }
+    }
+    
+    // n개의 저장소 Label을 self에 직접 붙이면 UITableView를 스크롤할때 navigation bar title이 .large와 .inline 자동으로 변경이 안된다.
+    // n개의 저장소 Label은 UITableView section header에 붙인다.
+    func headerView() -> UIView {
+        let headerView = UIView()
+        headerView.backgroundColor = .white
+        
+        // n개의 저장소
+        titleLb.textColor = .gray
+        titleLb.text = "\(viewModel.totalCount.decimalString())개 저장소"
+        headerView.addSubview(titleLb)
+        
+        titleLb.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+            make.leading.equalToSuperview().offset(20)
+            make.height.equalTo(30)
+        }
+
+        return headerView
     }
     
     func tableViewSeparatorStyleNone() {
@@ -64,14 +77,12 @@ class SearchListView: UIView {
         }
         viewModel.errorOccured = { [weak self] (error) in
             guard let self = self else { return }
+            
         }
     }
     
     // 리스트를 업데이트 한다.
     func updateList() {
-        // n개 저장소 업데이트
-        let str = "\(viewModel.list.count)개 저장소"
-        titleLb.text = str
         // 전체 리스트 업데이트
         table.reloadData()
     }
@@ -88,6 +99,11 @@ extension SearchListView: UITableViewDelegate, UITableViewDataSource {
     // 테이블뷰 셀 높이 = 자동
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 80
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        print(">>>>>>>>>>" + #function)
+        return headerView()
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

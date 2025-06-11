@@ -28,26 +28,34 @@ class SearchHistoryView: UIView {
     
     func setSubViews() {
         
+        // 검색기록 리스트 보여줄 UITableView
+        table.dataSource = self
+        table.delegate = self
+        table.estimatedRowHeight = 70
+        table.sectionHeaderHeight = 40
+        table.register(SearchHistoryCell.self, forCellReuseIdentifier: SearchHistoryCell.identifier)
+        self.addSubview(table)
+        
+        table.snp.makeConstraints { make in
+            make.top.leading.trailing.bottom.equalToSuperview()
+        }
+    }
+    
+    // n개의 저장소 Label을 self에 직접 붙이면 UITableView를 스크롤할때 navigation bar title이 .large와 .inline 자동으로 변경이 안된다.
+    // n개의 저장소 Label은 UITableView section header에 붙인다.
+    func headerView() -> UIView {
+        let headerView = UIView()
+        headerView.backgroundColor = .white
+        
         // 최근 검색 타이틀
         let titleLb = UILabel.label("최근 검색", 20, true)
-        self.addSubview(titleLb)
+        headerView.addSubview(titleLb)
         
         titleLb.snp.makeConstraints { make in
             make.leading.top.equalToSuperview().offset(10)
         }
         
-        // 검색기록 리스트 보여줄 UITableView
-        table.dataSource = self
-        table.delegate = self
-        table.estimatedRowHeight = 70
-        table.register(SearchHistoryCell.self, forCellReuseIdentifier: SearchHistoryCell.identifier)
-        table.register(NoHistoryCell.self, forCellReuseIdentifier: NoHistoryCell.identifier)
-        self.addSubview(table)
-        
-        table.snp.makeConstraints { make in
-            make.top.equalTo(titleLb.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
-        }
+        return headerView
     }
     
     func tableViewSeparatorStyleNone() {
@@ -87,7 +95,7 @@ class SearchHistoryView: UIView {
 // MARK: - UITableView Delegate / DataSource
 extension SearchHistoryView: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.list.count == 0 ? 1 : viewModel.list.count
+        return viewModel.list.count
     }
 
     // 여기에 전체삭제 버튼 만들어서 붙이자.
@@ -101,7 +109,7 @@ extension SearchHistoryView: UITableViewDelegate, UITableViewDataSource {
             }
             return view
         } else {
-            return nil
+            return SectionNoDataFooter()
         }
     }
     
@@ -110,25 +118,20 @@ extension SearchHistoryView: UITableViewDelegate, UITableViewDataSource {
         return UITableView.automaticDimension
     }
     
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        return headerView()
+    }
+    
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return viewModel.list.count > 0 ? 40 : 0
+        return 40
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        // 검색 기록이 없음. 기록없음 셀을 보여준다.s
-        if viewModel.list.count == 0 {
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: NoHistoryCell.identifier, for: indexPath) as? NoHistoryCell else {
-                return UITableViewCell()
-            }
-            return cell
-        }
         
         guard let cell = tableView.dequeueReusableCell(withIdentifier: SearchHistoryCell.identifier, for: indexPath) as? SearchHistoryCell else {
             return UITableViewCell()
         }
         cell.selectionStyle = .none
-        
         
         let search = viewModel.list[indexPath.row]
         cell.setText(idx: search.idx, text: search.text)
@@ -152,8 +155,40 @@ extension SearchHistoryView: UITableViewDelegate, UITableViewDataSource {
 }
 
 
-
 // MARK: - Section Footer View
+
+// 최근 검색어가 아무것도 없을 때 보여줄 셀 하나 만든다.
+class SectionNoDataFooter: UIView {
+    
+    private let textLb: UILabel = {
+        let lbl = UILabel.label("최근 검색 기록이 없습니다.", 13)
+        return lbl
+    }()
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setSubViews()
+    }
+    
+    func setSubViews() {
+        
+        // 검색어 보여주는 Label
+        textLb.numberOfLines = 0
+        textLb.textColor = .darkGray
+        textLb.textAlignment = .center
+        self.addSubview(textLb)
+        textLb.snp.makeConstraints { make in
+            make.leading.trailing.top.bottom.equalToSuperview()
+        }
+    }
+}
+
+
+/// 리스트가 있을때 붙는 SectionFooter. 전체삭제.
 class SectionDeleteFooterView: UIView {
     
     var allHistoryDelete: (() -> Void)?

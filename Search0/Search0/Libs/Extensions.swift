@@ -6,6 +6,24 @@
 //
 import UIKit
 
+
+extension UIViewController {
+    func showAlert(msg: String) {
+        let alertController = UIAlertController(title: "", message: msg, preferredStyle: .alert)
+        let action = UIAlertAction(title: "확인", style: .default)
+        alertController.addAction(action)
+        self.present(alertController, animated: true)
+    }
+}
+
+extension Int {
+    func decimalString() -> String {
+        let numberFmt = NumberFormatter()
+        numberFmt.numberStyle = .decimal
+        return numberFmt.string(from: NSNumber(value: self)) ?? ""
+    }
+}
+
 extension UIView {
     func shadow() {
         self.layer.masksToBounds = true
