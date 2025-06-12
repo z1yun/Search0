@@ -13,7 +13,11 @@ class SearchListView: UIView {
     private let table = UITableView()
     private var titleLb = UILabel.label("0개 저장소", 15)
 
+    // getNextRequest 사용할때만 바꾼다.
+    private var isLoading = false
+    
     var listSelected: ((Repository) -> Void)?
+    var errorOccored: ((Error) -> Void)?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -31,10 +35,14 @@ class SearchListView: UIView {
         // 검색기록 리스트 보여줄 UITableView
         table.dataSource = self
         table.delegate = self
+        table.prefetchDataSource = self
         table.estimatedRowHeight = 80
         table.sectionHeaderHeight = 40
         
         table.register(SearchListCell.self, forCellReuseIdentifier: SearchListCell.identifier)
+        // 테이블뷰 하단에 보여질 로딩뷰 등록
+        table.register(LoadingFooterView.self, forHeaderFooterViewReuseIdentifier: LoadingFooterView.identifier)
+
         self.addSubview(table)
         
         table.snp.makeConstraints { make in
@@ -73,11 +81,15 @@ class SearchListView: UIView {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.updateList()
+                loadingFinished()
             }
         }
+        
         viewModel.errorOccured = { [weak self] (error) in
             guard let self = self else { return }
-            
+            print("========= \(error.localizedDescription)")
+            loadingFinished()
+            errorOccored?(error)
         }
     }
     
@@ -87,22 +99,45 @@ class SearchListView: UIView {
         table.reloadData()
     }
     
+    func loadingStarted() {
+        isLoading = true
+        showLoadingView(show: true)
+    }
+    
+    func loadingFinished() {
+        isLoading = false
+        showLoadingView(show: false)
+    }
+    
+    
+    func showLoadingView(show: Bool) {
+        if show == true {   // 로딩 보여준다
+            let loadingView = table.dequeueReusableHeaderFooterView(withIdentifier: LoadingFooterView.identifier) as? LoadingFooterView
+            table.tableFooterView = loadingView
+        } else {            // 로딩 숨김
+            table.tableFooterView = nil
+        }
+    }
+    
 }
 
 // MARK: - UITableView Delegate / DataSource
-extension SearchListView: UITableViewDelegate, UITableViewDataSource {
+extension SearchListView: UITableViewDelegate, UITableViewDataSource, UITableViewDataSourcePrefetching {
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 //        return viewModel.list.count == 0 ? 1 : viewModel.list.count
         return viewModel.list.count
     }
     
-    // 테이블뷰 셀 높이 = 자동
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 80
     }
     
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 80
+    }
+    
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        print(">>>>>>>>>>" + #function)
         return headerView()
     }
     
@@ -125,23 +160,59 @@ extension SearchListView: UITableViewDelegate, UITableViewDataSource {
         let repo = viewModel.list[indexPath.row]
         listSelected?(repo)
     }
+    
+    func tableView(_ tableView: UITableView, prefetchRowsAt indexPaths: [IndexPath]) {
+        
+/*
+        // 마지막에서 -5 번째 셀이 보여지려고 준비할때
+        guard let maxRow = indexPaths.map({ $0.row }).max() else { return }
+        if maxRow >= viewModel.list.count - 1  && isLoading == false {
+            // 다음 리스트 가져오자.
+            isLoading = true
+            viewModel.getNextRepository()
+        }
+*/
+//        if indexPaths.contains(where: { $0.row >= viewModel.list.count - 1 })
+//            && isLoading == false {
+//            isLoading = true
+//            showLoadingView(show: true)
+//            viewModel.getNextRepository()
+//        }
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        
+        if viewModel.totalCount > viewModel.list.count &&
+            indexPath.row >= viewModel.list.count - 1  &&
+            isLoading == false {
+            loadingStarted()
+            viewModel.getNextRepository()
+        }
+        
+    }
+    
 }
 
 // MARK: - Section Footer View
-class LoadingFooterView: UIView {
+class LoadingFooterView: UITableViewHeaderFooterView {
+    static let identifier = "LoadingFooterView"
     
-    var allHistoryDelete: (() -> Void)?
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    let indicatorView = UIActivityIndicatorView(style: .medium)
+    override init(reuseIdentifier: String?) {
+        super.init(reuseIdentifier: reuseIdentifier)
         setSubViews()
+    }
+    required init?(coder: NSCoder) {
+        fatalError()
     }
     
     func setSubViews() {
-        
+        indicatorView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(indicatorView)
+        indicatorView.snp.makeConstraints { make in
+            make.centerX.centerY.equalToSuperview()
+        }
+        indicatorView.startAnimating()
     }
+    
 }

@@ -96,6 +96,23 @@ class MainViewController: UIViewController {
             self.navigationController?.pushViewController(vc, animated: true)
         }
         
+        listView.errorOccored = { [weak self] (error) in
+            guard let self = self else { return }
+            
+            var msg: String {
+                switch error {
+                    case APIError.jsonDecodingFailed:
+                        return "JSON parsing에 실패했습니다."
+                    case APIError.responseDataNil:
+                        return "데이터를 불러올 수 없습니다."
+                    default:
+                        return error.localizedDescription
+                }
+            }
+            showAlert(msg: msg)
+            
+        }
+        
         // 자동완성 결과 눌렀음.
         searchViewController.listSelected = { [weak self] (search) in
             guard let self = self else { return }

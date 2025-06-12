@@ -43,6 +43,7 @@ struct Owner: Codable {
     }
 }
 
+// MARK: - ViewModel #######################################
 
 class RepositoriesViewModel {
     private(set) var list: [Repository] = [] {
@@ -52,19 +53,46 @@ class RepositoriesViewModel {
     }
     let api = API()
     var totalCount = 0
+    var currentPage = 1
+    var currentSearchText = ""
     
     var listUpdated: (() -> Void)?
-    var errorOccured: ((Error?) -> Void)?
+    var errorOccured: ((Error) -> Void)?
+    
+    func getNextRepository() {
+        currentPage += 1
+        getRepository(word: currentSearchText, page: currentPage)
+    }
     
     func getRepository(word: String, page: Int) {
         Task {
-            if let data: (Data, URLResponse) = await api.sendRequest(word: word, page: page),
-               let repos = Repositories.from(data: data.0) {
+//            if let data: (Data?, URLResponse?, Error?) = await api.sendRequest(word: word, page: page),
+            let (data, _, error) = await api.sendRequest(word: word, page: page)
+            print("1111111")
+            // 에러가 있으면 .....
+            if let error = error {
+                print(#function + " error: \(error)")
+                errorCallback(error)
+                return
+            }
+
+            guard let resData = data else {
+                print("3333333333")
+                errorCallback(APIError.responseDataNil)
+                return
+            }
+
+            let str = String(decoding: resData, as: UTF8.self)
+            print(str)
+            
+            if let repos = Repositories.from(data: resData) {
                 totalCount = repos.totalCount
                 
                 // Repositories 로 받음
                 if page == 1 {  // 데이터를 받아왔는데 1페이지임. 처음 받아온 데이터. items를 그냥 list
                     list = repos.items
+                    currentPage = 1
+                    currentSearchText = word
                 } else {        // 2페이지 부터는 list에 append해야 함.
                     list.append(contentsOf: repos.items)
                     
@@ -72,13 +100,20 @@ class RepositoriesViewModel {
                         self.listUpdated?()
                     }
                 }
+                print("----- count: \(list.count)")
                 
             } else {        // 에러.
-                errorOccured?(nil)
+                print("22222222222")
+                errorCallback(APIError.jsonDecodingFailed)
             }
         }
     }
     
+    func errorCallback(_ error: Error) {
+        Task { @MainActor in
+            errorOccured?(error)
+        }
+    }
     
     
 }
