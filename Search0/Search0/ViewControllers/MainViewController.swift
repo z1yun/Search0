@@ -95,13 +95,29 @@ class MainViewController: UIViewController {
             let vc = WebViewController(url: repo.owner.htmlURL)
             self.navigationController?.pushViewController(vc, animated: true)
         }
+        
+        // 자동완성 결과 눌렀음.
+        searchViewController.listSelected = { [weak self] (search) in
+            guard let self = self else { return }
+            // 검색 입력창에 선택한 검색어를 넣어주자. 자동완성 누르니까 내가 뭘 검색했는지 알수가 없다.
+            self.navigationItem.searchController?.searchBar.text = search.text
+            // 검색 시작
+            sendSearchRequest(text: search.text)
+        }
+    }
+
+    func sendSearchRequest(text: String) {
+        // 검색 request
+        listView.viewModel.getRepository(word: text, page: 1)
+        // listView 보여준다.
+        hideHistoryView(hide: true)
+        searchViewController.dismiss(animated: true)
     }
     
     func hideHistoryView(hide: Bool) {
         historyView.isHidden = hide
         listView.isHidden = !hide
     }
-    
     
 }
 
@@ -119,12 +135,14 @@ extension MainViewController: UISearchControllerDelegate, UISearchResultsUpdatin
     
     
     // UISearchREsultsUPdating ---------
+    // 검색어 입력하면 여기로 들어온다.
     func updateSearchResults(for searchController: UISearchController) {
-        guard let text = searchController.searchBar.text?.lowercased() else { return }
-        print(#function, text)
         
-//        filteredData = data.filter { $0.lowercased().contains(text) }
-//        tableView.reloadData()
+        // 대.소문자 구분하지 않기위해 다 lowercased()
+        guard let text = searchController.searchBar.text?.lowercased() else { return }
+        let filteredlist = historyView.viewModel.list.filter { $0.text.lowercased().contains(text) }
+        
+        searchViewController.updateList(filteredlist)
     }
     
     // UISearchBarDelegate -----
@@ -136,10 +154,7 @@ extension MainViewController: UISearchControllerDelegate, UISearchResultsUpdatin
         if let text = searchBar.text, text.isEmpty == false {
             try? historyView.viewModel.addHistory(text: text, regdt: Date.timeIntervalSinceReferenceDate)
             // 검색 request
-            listView.viewModel.getRepository(word: text, page: 1)
-            // listView 보여준다.
-            hideHistoryView(hide: true)
-            searchViewController.dismiss(animated: true)
+            sendSearchRequest(text: text)
         }
     }
     

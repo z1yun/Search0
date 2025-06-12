@@ -15,7 +15,7 @@ struct SearchHistory: Codable {
     func dateString() -> String {
         let date = Date(timeIntervalSinceReferenceDate: regdt)
         let fmt = DateFormatter()
-        fmt.dateFormat = "MM.dd"
+        fmt.dateFormat = "MM. dd"
         return fmt.string(from: date)
     }
 }
