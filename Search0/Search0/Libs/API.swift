@@ -34,3 +34,10 @@ class API {
 }
 
 
+/*
+ 테스트를 하다보면 대략 10페이지에서 에러가 발생한다.
+ 
+ {"message":"API rate limit exceeded for xxx.xxx.xxx.xxx. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)","documentation_url":"https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"}
+ 
+ API 요청에 한도가 있어서 인증이 필요한듯.
+ */

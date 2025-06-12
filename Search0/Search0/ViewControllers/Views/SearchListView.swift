@@ -35,7 +35,6 @@ class SearchListView: UIView {
         // 검색기록 리스트 보여줄 UITableView
         table.dataSource = self
         table.delegate = self
-        table.prefetchDataSource = self
         table.estimatedRowHeight = 80
         table.sectionHeaderHeight = 40
         
@@ -122,7 +121,7 @@ class SearchListView: UIView {
 }
 
 // MARK: - UITableView Delegate / DataSource
-extension SearchListView: UITableViewDelegate, UITableViewDataSource, UITableViewDataSourcePrefetching {
+extension SearchListView: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 //        return viewModel.list.count == 0 ? 1 : viewModel.list.count
@@ -161,27 +160,9 @@ extension SearchListView: UITableViewDelegate, UITableViewDataSource, UITableVie
         listSelected?(repo)
     }
     
-    func tableView(_ tableView: UITableView, prefetchRowsAt indexPaths: [IndexPath]) {
-        
-/*
-        // 마지막에서 -5 번째 셀이 보여지려고 준비할때
-        guard let maxRow = indexPaths.map({ $0.row }).max() else { return }
-        if maxRow >= viewModel.list.count - 1  && isLoading == false {
-            // 다음 리스트 가져오자.
-            isLoading = true
-            viewModel.getNextRepository()
-        }
-*/
-//        if indexPaths.contains(where: { $0.row >= viewModel.list.count - 1 })
-//            && isLoading == false {
-//            isLoading = true
-//            showLoadingView(show: true)
-//            viewModel.getNextRepository()
-//        }
-    }
-    
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         
+        // 마지막 셀이 보여지려고 할때 다음 페이지 가져오자.
         if viewModel.totalCount > viewModel.list.count &&
             indexPath.row >= viewModel.list.count - 1  &&
             isLoading == false {
