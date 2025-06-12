@@ -71,8 +71,6 @@ class SearchHistoryView: UIView {
     }
     
     func deleteHistory(idx: Int) {
-        print(">>> " + #function)
-        
         do {
             try viewModel.deleteHistory(idx: idx)
         } catch {
@@ -81,8 +79,6 @@ class SearchHistoryView: UIView {
     }
     
     func deleteAllHistory() {
-        print(">>> " + #function)
-        
         do {
             try viewModel.deleteAllHistory()
         } catch {

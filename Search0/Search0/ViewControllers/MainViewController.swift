@@ -142,13 +142,8 @@ class MainViewController: UIViewController {
 extension MainViewController: UISearchControllerDelegate, UISearchResultsUpdating, UISearchBarDelegate {
     
     // UISearchControllerDelegate
-    func willPresentSearchController(_ searchController: UISearchController) {
-        print(#function)
-    }
-    
-    func willDismissSearchController(_ searchController: UISearchController) {
-        print(#function)
-    }
+    func willPresentSearchController(_ searchController: UISearchController) { }
+    func willDismissSearchController(_ searchController: UISearchController) { }
     
     
     // UISearchREsultsUPdating ---------
@@ -157,6 +152,7 @@ extension MainViewController: UISearchControllerDelegate, UISearchResultsUpdatin
         
         // 대.소문자 구분하지 않기위해 다 lowercased()
         guard let text = searchController.searchBar.text?.lowercased() else { return }
+        // 검색기록에서 입력된 문자열 포함하는 것만 골라서 searchViewController로 보내준다 - 자동완성
         let filteredlist = historyView.viewModel.list.filter { $0.text.lowercased().contains(text) }
         
         searchViewController.updateList(filteredlist)
@@ -166,8 +162,6 @@ extension MainViewController: UISearchControllerDelegate, UISearchResultsUpdatin
     // 검색 키보드에서 Enter(Search) 눌렀음.
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         // DB에 검색에 추가 해야함. SearchHistoryView가 갖고 있는 SearchHistoryViewModel을 통해서 추가하자.
-        print(#function)
-        
         if let text = searchBar.text, text.isEmpty == false {
             try? historyView.viewModel.addHistory(text: text, regdt: Date.timeIntervalSinceReferenceDate)
             // 검색 request

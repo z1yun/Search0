@@ -68,7 +68,6 @@ class RepositoriesViewModel {
         Task {
 //            if let data: (Data?, URLResponse?, Error?) = await api.sendRequest(word: word, page: page),
             let (data, _, error) = await api.sendRequest(word: word, page: page)
-            print("1111111")
             // 에러가 있으면 .....
             if let error = error {
                 print(#function + " error: \(error)")
@@ -77,13 +76,9 @@ class RepositoriesViewModel {
             }
 
             guard let resData = data else {
-                print("3333333333")
                 errorCallback(APIError.responseDataNil)
                 return
             }
-
-            let str = String(decoding: resData, as: UTF8.self)
-            print(str)
             
             if let repos = Repositories.from(data: resData) {
                 totalCount = repos.totalCount
@@ -100,10 +95,8 @@ class RepositoriesViewModel {
                         self.listUpdated?()
                     }
                 }
-                print("----- count: \(list.count)")
                 
             } else {        // 에러.
-                print("22222222222")
                 errorCallback(APIError.jsonDecodingFailed)
             }
         }

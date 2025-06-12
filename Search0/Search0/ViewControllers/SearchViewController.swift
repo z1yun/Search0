@@ -11,7 +11,6 @@ class SearchViewController: UIViewController {
     
     let table = UITableView()
     private var list: [SearchHistory] = []
-    
     var listSelected: ((SearchHistory) -> Void)?
     
     override func viewDidLoad() {
@@ -34,6 +33,7 @@ class SearchViewController: UIViewController {
         }
     }
     
+    // MainViewController 에서 자동완성 리스트 여기로...
     func updateList(_ list: [SearchHistory]) {
         self.list = list
         table.reloadData()

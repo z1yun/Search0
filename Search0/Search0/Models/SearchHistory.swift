@@ -72,7 +72,6 @@ class SearchHistoryViewModel {
     func searchHistorys() -> [SearchHistory] {
         let rows: [(Int, String, Double)] = mgr.selectAll()
         list = rows.map { SearchHistory(idx: $0.0, text: $0.1, regdt: $0.2) }
-        print(list)
         return list
     }
     
