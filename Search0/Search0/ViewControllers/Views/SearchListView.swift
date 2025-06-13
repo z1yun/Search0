@@ -62,7 +62,7 @@ class SearchListView: UIView {
         
         titleLb.snp.makeConstraints { make in
             make.top.equalToSuperview()
-            make.leading.equalToSuperview().offset(20)
+            make.leading.equalTo(headerView.safeAreaLayoutGuide.snp.leading).offset(20)
             make.height.equalTo(30)
         }
 
